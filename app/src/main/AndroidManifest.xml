@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.biotel.iot">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission-sdk-23
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="29" />
+
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/icon_launcher"
+        android:label="@string/application_name"
+        android:theme="@style/AppTheme"
+        android:name="com.biotel.iot.App"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        <activity android:name="com.biotel.iot.containers.BaseScreen"/>
+        <activity
+            android:name="com.biotel.iot.ui.main.MainActivity"
+            android:label="@string/application_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.biotel.iot.ui.details.DeviceDetailsActivity" />
+        <activity android:name="com.biotel.iot.ui.control.DeviceControlActivity" />
+
+        <service
+            android:name="com.biotel.iot.services.BluetoothLeService"
+            android:enabled="true" />
+        <service
+            android:name=".services.WebServerService"
+            android:enabled="true"
+            android:exported="true"/>
+
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/share_provider_filepaths" />
+        </provider>
+    </application>
+
+</manifest>

@@ -1,0 +1,52 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion '28.0.3'
+
+    defaultConfig {
+        applicationId "com.biotel.iot"
+        minSdkVersion 18
+        targetSdkVersion 29
+
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    //Core
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    //UI
+    implementation "androidx.appcompat:appcompat:$androidx_appcompat_version"
+    implementation "androidx.recyclerview:recyclerview:$androidx_recyclerview"
+
+    //NanoHttpd (Server in Android)
+    implementation 'org.nanohttpd:nanohttpd:2.2.0'
+
+    //BLe
+    implementation 'uk.co.alt236:bluetooth-le-library-android:1.0.0'
+
+    //Other
+    implementation 'uk.co.alt236:easycursor-android:1.0.0'
+    implementation "com.anthonycr.grant:permissions:$grant_permissions_version"
+
+    //Testing
+    testImplementation 'junit:junit:4.13'
+    testImplementation 'org.mockito:mockito-all:1.10.19'
+}
