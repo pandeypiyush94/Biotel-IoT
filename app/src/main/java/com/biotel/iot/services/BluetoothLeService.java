@@ -27,6 +27,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -43,6 +44,9 @@ import uk.co.alt236.bluetoothlelib.device.BluetoothLeDevice;
 import uk.co.alt236.bluetoothlelib.device.adrecord.AdRecord;
 import uk.co.alt236.bluetoothlelib.util.ByteUtils;
 import com.biotel.iot.util.AppPref;
+
+import static com.biotel.iot.services.WebServerService.ADD_IOT;
+import static com.biotel.iot.services.WebServerService.ADD_THERMAL;
 
 /**
  * Created By Piyush Pandey on 18-07-2020
@@ -110,12 +114,17 @@ public class BluetoothLeService extends Service implements OnQueryListener {
 
                 setConnectionState(State.DISCONNECTED, true);
                 Log.i(TAG, "Disconnected from GATT server.");
+                //Connect Again to Iot Device if got Disconnected
+                connect(ADD_IOT);
             }
         }
 
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
+                }
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
@@ -127,12 +136,15 @@ public class BluetoothLeService extends Service implements OnQueryListener {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
             final BluetoothLeDevice deviceLe = new BluetoothLeDevice(device, rssi, scanRecord, System.currentTimeMillis());
-            if (deviceLe.getAddress().equals("EC:21:E5:B6:55:9D")) {
+            //Check for Thermal Device
+            if (deviceLe.getAddress().equals(ADD_THERMAL)) {
                 final Collection<AdRecord> adRecords = deviceLe.getAdRecordStore().getRecordsAsCollection();
                 if (adRecords.size() > 0) {
                     for (final AdRecord record : adRecords) {
+                        //Filter out Thermal Array from Device's Advertisements
                         if (record.getType() == 255) {
                             thermalDataResponse = ByteUtils.byteArrayToHexString(record.getData());
+                            //Stop Scan
                             mScanner.stopScan("Thermal Device Found");
                         }
                     }
@@ -143,6 +155,7 @@ public class BluetoothLeService extends Service implements OnQueryListener {
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
+        //Send Iot Device Connectivity Status To Background Service
         sendBroadcast(intent);
     }
 
@@ -256,6 +269,7 @@ public class BluetoothLeService extends Service implements OnQueryListener {
      * callback.
      */
     public void disconnect() {
+        Log.e("check_blt", (mBluetoothAdapter == null) +":" + (mBluetoothGatt == null) );
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
@@ -311,6 +325,7 @@ public class BluetoothLeService extends Service implements OnQueryListener {
         if (gattCharacteristic != null) {
             int characProp = gattCharacteristic.getProperties();
             if ((characProp | BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
+                //Send/Write Door Key To IoT Device
                 writeCharacteristic(gattCharacteristic, key);
                 if (key.equalsIgnoreCase("5A01A5")) {
                     return "Door Locked";
@@ -321,13 +336,15 @@ public class BluetoothLeService extends Service implements OnQueryListener {
         } else {
             return "Door Lock Not Found";
         }
-        return "Success";
+        return "Issue With IoT Device";
     }
 
     private String scanSendThermalData() {
+        //Get the Bluetooth Scanner Object
         mScanner = pref.getBtScanner();
         mScanner.setScanCallbackListener(callback);
         if (mScanner.getBluetoothAdapter().isBluetoothOn()) {
+            //Start Bluetooth Scan For Thermal Device
             mScanner.startScan();
         }
         try {
@@ -335,6 +352,7 @@ public class BluetoothLeService extends Service implements OnQueryListener {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
+        //Stop Bluetooth Scan After 2000ms(2s)
         mScanner.stopScan("Returning Thermal Device");
         mScanner.removeScanCallbackListener();
         mScanner = null;
@@ -418,12 +436,15 @@ public class BluetoothLeService extends Service implements OnQueryListener {
     @Override
     @NotNull
     public String onQueryParamsReceived(@Nullable Map<String, String> params) {
+        Log.e("check_params", params.toString());
         if (params != null && !params.isEmpty()) {
             String doorAction = params.get("doorAction");
             String thermalData = params.get("thermalData");
             if (doorAction != null) {
+                //Perform Door Operation if its Door Param
                 return lockUnlockDoor(doorAction);
             } else if (thermalData != null) {
+                //Perform Thermal Operation if its Thermal Param
                 return scanSendThermalData();
             }
         }

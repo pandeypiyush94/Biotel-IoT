@@ -81,10 +81,25 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@android:id/list"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/upperSepparator"
         android:layout_above="@id/lowerSepparator"/>
+
+    <TextView
+        android:id="@+id/tv_ble_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/sp16"
+        android:padding="@dimen/dp16"
+        android:gravity="center"
+        android:text="No Device Found"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/bluetooth_blue"
+        android:layout_below="@+id/upperSepparator"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/dp48"/>
 
     <View
         android:id="@+id/lowerSepparator"

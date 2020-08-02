@@ -15,6 +15,7 @@ class View(activity: Activity) {
     private var mList: RecyclerView = activity.findViewById(android.R.id.list)
     private var btnServer: Button = activity.findViewById(R.id.btn_server)
     private var tvServerIP: TextView = activity.findViewById(R.id.server_ip)
+    private var tvBleStatus: TextView = activity.findViewById(R.id.tv_ble_status)
 
     init {
         mList.layoutManager = LinearLayoutManager(activity)
@@ -50,5 +51,13 @@ class View(activity: Activity) {
 
     fun setIpAddress(address : String) {
         tvServerIP.text = address
+    }
+
+    fun setBleStatus(status : String) {
+        tvBleStatus.text = status
+    }
+
+    fun getBleStatus() : String {
+        return tvBleStatus.text.toString()
     }
 }

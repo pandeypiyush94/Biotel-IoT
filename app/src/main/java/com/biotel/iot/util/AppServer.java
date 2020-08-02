@@ -74,6 +74,7 @@ public class AppServer extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
+        //Get The Params From The URL
         Response response = null;
         if (listener != null) {
             response = newFixedLengthResponse(listener.onQueryParamsReceived(session.getParms()));
